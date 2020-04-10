@@ -24,7 +24,7 @@ import SQLite3
 
 /// `SQLiteError` enumerates all errors that can be thrown by methods of the SQLiteExpress framework.
 /// Both primary as well as extended result/error codes from SQLite are supported.
-public struct SQLiteError: LocalizedError, Hashable {
+public struct SQLiteError: LocalizedError, Hashable, CustomStringConvertible {
 
   /// The corresponding error code
   public let errorCode: SQLiteResultCode
@@ -56,9 +56,18 @@ public struct SQLiteError: LocalizedError, Hashable {
   /// Returns a localized description of this error as a string.
   public var errorDescription: String? {
     if let details = self.errorDetails {
-      return "\(self.errorCode.message): \(details) (error \(self.errorCode.rawValue))"
+      return "\(self.errorCode.message): \(details)"
     } else {
-      return "\(self.errorCode.message) (error \(self.errorCode.rawValue))"
+      return self.errorCode.message
+    }
+  }
+  
+  /// Returns a localized description of this error as a string.
+  public var description: String {
+    if let message = self.errorDescription {
+      return "\(message) (\(self.errorCode))"
+    } else {
+      return "unknown SQLite3 error (\(self.errorCode))"
     }
   }
   
