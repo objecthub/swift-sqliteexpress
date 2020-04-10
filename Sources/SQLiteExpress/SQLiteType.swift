@@ -23,10 +23,25 @@ import SQLite3
 
 
 /// `SQLiteType` enumerates the types supported natively by SQLite.
-public enum SQLiteType: Int32 {
+public enum SQLiteType: Int32, CustomStringConvertible {
   case integer = 1
   case float
   case text
   case blob
   case null
+  
+  public var description: String {
+    switch self {
+      case .integer:
+        return "INTEGER"
+      case .float:
+        return "REAL"
+      case .text:
+        return "TEXT"
+      case .blob:
+        return "BLOB"
+      case .null:
+        return "NULL"
+    }
+  }
 }

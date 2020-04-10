@@ -15,7 +15,7 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "CCC43D2924394AFE005FFD1D"
-               BuildableName = "SQLiteExpress_iOS.framework"
+               BuildableName = "SQLiteExpress iOS.framework"
                BlueprintName = "SQLiteExpress iOS"
                ReferencedContainer = "container:SQLiteExpress.xcodeproj">
             </BuildableReference>
@@ -75,7 +75,7 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "CCC43D2924394AFE005FFD1D"
-            BuildableName = "SQLiteExpress_iOS.framework"
+            BuildableName = "SQLiteExpress iOS.framework"
             BlueprintName = "SQLiteExpress iOS"
             ReferencedContainer = "container:SQLiteExpress.xcodeproj">
          </BuildableReference>

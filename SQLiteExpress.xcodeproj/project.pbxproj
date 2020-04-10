@@ -43,7 +43,7 @@
 		CC3625E724393037003A96DB /* SQLiteDatabase.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = SQLiteDatabase.swift; sourceTree = "<group>"; };
 		CC3625EC24394912003A96DB /* LICENSE */ = {isa = PBXFileReference; lastKnownFileType = text; path = LICENSE; sourceTree = "<group>"; };
 		CC3625ED24394943003A96DB /* CONTRIBUTING.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = CONTRIBUTING.md; sourceTree = "<group>"; };
-		CCC43D2A24394AFE005FFD1D /* SQLiteExpress_iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = SQLiteExpress_iOS.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		CCC43D2A24394AFE005FFD1D /* SQLiteExpress iOS.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = "SQLiteExpress iOS.framework"; sourceTree = BUILT_PRODUCTS_DIR; };
 		CCC43D2C24394AFE005FFD1D /* SQLiteExpress_iOS.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = SQLiteExpress_iOS.h; sourceTree = "<group>"; };
 		CCC43D2D24394AFE005FFD1D /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -94,7 +94,7 @@
 			children = (
 				CC3625C724392F76003A96DB /* SQLiteExpress.framework */,
 				CC3625D024392F76003A96DB /* SQLiteExpressTests.xctest */,
-				CCC43D2A24394AFE005FFD1D /* SQLiteExpress_iOS.framework */,
+				CCC43D2A24394AFE005FFD1D /* SQLiteExpress iOS.framework */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -206,7 +206,7 @@
 			);
 			name = "SQLiteExpress iOS";
 			productName = "SQLiteExpress iOS";
-			productReference = CCC43D2A24394AFE005FFD1D /* SQLiteExpress_iOS.framework */;
+			productReference = CCC43D2A24394AFE005FFD1D /* SQLiteExpress iOS.framework */;
 			productType = "com.apple.product-type.framework";
 		};
 /* End PBXNativeTarget section */
@@ -440,6 +440,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = C72Z63N8M5;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -452,6 +453,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = net.objecthub.SQLiteExpress;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -466,6 +468,7 @@
 				CLANG_ENABLE_MODULES = YES;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
+				CURRENT_PROJECT_VERSION = 2;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = C72Z63N8M5;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -478,6 +481,7 @@
 					"@executable_path/../Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = net.objecthub.SQLiteExpress;
 				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
 				SKIP_INSTALL = YES;
@@ -527,6 +531,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = C72Z63N8M5;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -540,8 +545,9 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = net.objecthub.SQLiteExpress;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "SQLiteExpress iOS";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
@@ -553,6 +559,7 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 2;
 				DEFINES_MODULE = YES;
 				DEVELOPMENT_TEAM = C72Z63N8M5;
 				DYLIB_COMPATIBILITY_VERSION = 1;
@@ -566,8 +573,9 @@
 					"@executable_path/Frameworks",
 					"@loader_path/Frameworks",
 				);
+				MARKETING_VERSION = 1.0.1;
 				PRODUCT_BUNDLE_IDENTIFIER = net.objecthub.SQLiteExpress;
-				PRODUCT_NAME = "$(TARGET_NAME:c99extidentifier)";
+				PRODUCT_NAME = "SQLiteExpress iOS";
 				SDKROOT = iphoneos;
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;

@@ -48,7 +48,7 @@ class SQLiteExpressTests: XCTestCase {
         );
       """)
     XCTAssertTrue(try stmt0.step())
-    stmt0.finalize()
+    try stmt0.finalize(throwingError: true)
     XCTAssertNil(try? stmt0.step())
     let stmt1 = try db.prepare(sql: """
         INSERT INTO Contacts VALUES (?, ?, ?, ?);
@@ -74,7 +74,7 @@ class SQLiteExpressTests: XCTestCase {
     try stmt1.bind(text: "mark@white-house.gov", toParam: 3)
     try stmt1.bindNull(toParam: 4)
     XCTAssertTrue(try stmt1.step())
-    stmt1.finalize()
+    try stmt1.finalize(throwingError: true)
     let stmt2 = try db.prepare(sql: """
       SELECT COUNT(DISTINCT phone) FROM Contacts;
     """)
@@ -82,7 +82,7 @@ class SQLiteExpressTests: XCTestCase {
     XCTAssertEqual(stmt2.columnCount, 1)
     XCTAssertEqual(try stmt2.int(atColumn: 0), 1)
     XCTAssertTrue(try stmt2.step())
-    stmt2.finalize()
+    try stmt2.finalize(throwingError: true)
     let stmt3 = try db.prepare(sql: """
       SELECT name, email FROM Contacts;
     """)
@@ -101,6 +101,6 @@ class SQLiteExpressTests: XCTestCase {
     XCTAssertEqual(try stmt3.text(atColumn: 0), "Mark Meadows")
     XCTAssertEqual(try stmt3.text(atColumn: 1), "mark@white-house.gov")
     XCTAssertTrue(try stmt3.step())
-    stmt3.finalize()
+    try stmt3.finalize(throwingError: true)
   }
 }

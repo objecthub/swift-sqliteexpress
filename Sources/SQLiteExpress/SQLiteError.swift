@@ -24,7 +24,7 @@ import SQLite3
 
 /// `SQLiteError` enumerates all errors that can be thrown by methods of the SQLiteExpress framework.
 /// Both primary as well as extended result/error codes from SQLite are supported.
-public enum SQLiteError: Error, Equatable {
+public enum SQLiteError: Error, Hashable, CustomStringConvertible {
   case ok
   case error
   case `internal`
@@ -320,9 +320,14 @@ public enum SQLiteError: Error, Equatable {
   /// Returns a human readable error message for this `SQLiteError` object.
   public var errorMessage: String {
     if let cstr = sqlite3_errstr(self.errorCode) {
-      return String(cString: cstr)
+      return "\(String(cString: cstr)) \(self.errorCode)"
     } else {
       return "unknown sqlite3 error \(self.errorCode)"
     }
+  }
+  
+  /// Returns a description of this error as a string.
+  public var description: String {
+    return "SQLite3 error: \(self.errorMessage)"
   }
 }
