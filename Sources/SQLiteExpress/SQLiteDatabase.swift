@@ -96,7 +96,7 @@ public class  SQLiteDatabase {
   }
   
   /// Prepare the given SQL statement.
-  func prepare(sql: String) throws -> SQLiteStatement {
+  public func prepare(sql: String) throws -> SQLiteStatement {
     guard self.db != nil else {
       throw SQLiteError(SQLITE_MISUSE)
     }
