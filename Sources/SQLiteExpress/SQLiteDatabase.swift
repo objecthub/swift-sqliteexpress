@@ -76,7 +76,10 @@ public class  SQLiteDatabase {
     var db: OpaquePointer?
     let res = sqlite3_open_v2(path, &db, options.rawValue, nil)
     guard res == SQLITE_OK else {
-      throw SQLiteError(res)
+      guard db != nil, let cstr = sqlite3_errmsg(db) else {
+        throw SQLiteError(res)
+      }
+      throw SQLiteError(res, details: String(cString: cstr))
     }
     self.db = db
     sqlite3_extended_result_codes(db, extendedErrors ? 1 : 0)
@@ -90,7 +93,7 @@ public class  SQLiteDatabase {
   public func close() throws {
     let res = sqlite3_close_v2(self.db)
     guard res == SQLITE_OK else {
-      throw SQLiteError(res)
+      throw SQLiteError(res, database: self)
     }
     self.db = nil
   }
@@ -98,29 +101,66 @@ public class  SQLiteDatabase {
   /// Prepare the given SQL statement.
   public func prepare(sql: String) throws -> SQLiteStatement {
     guard self.db != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw SQLiteError(SQLITE_MISUSE, details: "database already closed")
     }
     var stmt: OpaquePointer?
     let res = sqlite3_prepare_v2(self.db, sql, -1, &stmt, nil)
     guard res == SQLITE_OK else {
-      throw SQLiteError(res)
+      throw SQLiteError(res, database: self)
     }
-    return SQLiteStatement(stmt)
+    return SQLiteStatement(database: self, stmt: stmt)
+  }
+  
+  /// Returns the last error code.
+  public var lastErrorCode: SQLiteResultCode {
+    guard self.db != nil else {
+      return SQLiteResultCode.ok
+    }
+    return SQLiteResultCode(sqlite3_errcode(self.db))
+  }
+  
+  /// Returns the last extended error code.
+  public var lastExtendedErrorCode: SQLiteResultCode {
+    guard self.db != nil else {
+      return SQLiteResultCode.ok
+    }
+    return SQLiteResultCode(sqlite3_extended_errcode(self.db))
+  }
+  
+  /// Returns details about the latest error.
+  public var lastErrorDetails: String? {
+    guard self.db != nil else {
+      return nil
+    }
+    if let cstr = sqlite3_errmsg(self.db) {
+      return String(cString: cstr)
+    } else {
+      return nil
+    }
   }
   
   /// The `rowid` of the last row inserted.
   public var lastRowId: Int64 {
+    guard self.db != nil else {
+      return -1
+    }
     return sqlite3_last_insert_rowid(self.db)
   }
   
   /// The number of rows changed by the last `INSERT`, `UPDATE`, or `DELETE` statement.
   public var lastChanges: Int {
+    guard self.db != nil else {
+      return -1
+    }
     return Int(sqlite3_changes(self.db))
   }
   
   /// The number of rows changed via `INSERT`, `UPDATE`, or `DELETE` statements since the
   /// database was opened.
   public var totalChanges: Int {
+    guard self.db != nil else {
+      return -1
+    }
     return Int(sqlite3_total_changes(self.db))
   }
 }

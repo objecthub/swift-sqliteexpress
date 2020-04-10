@@ -26,11 +26,16 @@ import SQLite3
 /// `SQLiteDatabase.prepare`.
 public class SQLiteStatement {
   
+  // Declare a few missing constants
   private static let SQLITE_STATIC = unsafeBitCast(0, to: sqlite3_destructor_type.self)
   private static let SQLITE_TRANSIENT = unsafeBitCast(-1, to: sqlite3_destructor_type.self)
-
+  
+  /// Protocol violation error
+  private static let protocolViolation = SQLiteError(SQLITE_MISUSE,
+                                                     details: "statement already finalized")
+  
   /// Formatter for reading and writing dates.
-  public static var dateFormatter: DateFormatter = {
+  private static var dateFormatter: DateFormatter = {
       let formatter = DateFormatter()
       formatter.dateFormat = "yyyy-MM-dd'T'HH:mm:ss.SSSX"
       formatter.locale = Locale(identifier: "en_US_POSIX")
@@ -38,21 +43,25 @@ public class SQLiteStatement {
       return formatter
   }()
   
+  private weak var database: SQLiteDatabase?
   private var stmt: OpaquePointer?
   
-  internal init(_ stmt: OpaquePointer?) {
+  internal init(database: SQLiteDatabase, stmt: OpaquePointer?) {
+    self.database = database
     self.stmt = stmt
   }
   
   deinit {
-    sqlite3_finalize(self.stmt)
+    if self.stmt != nil {
+      sqlite3_finalize(self.stmt)
+    }
   }
   
   /// Executes this statement and returns `true` if the result is done. When `false` is returned,
   /// `step()` can be called again to retrieve the next row of the result.
   @discardableResult public func step() throws -> Bool {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     let res = sqlite3_step(self.stmt)
     switch res {
@@ -62,7 +71,7 @@ public class SQLiteStatement {
       case SQLITE_ROW:
         return false
       default:
-        throw SQLiteError(res)
+        throw SQLiteError(res, database: self.database)
     }
   }
   
@@ -111,7 +120,7 @@ public class SQLiteStatement {
   /// Returns the name of column `col` of the current result row.
   public func name(ofColumn col: Int) throws -> String? {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     guard let cstr = sqlite3_column_name(self.stmt, Int32(col)) else {
       return nil
@@ -122,7 +131,7 @@ public class SQLiteStatement {
   /// Returns the database name of column `col` of the current result row.
   public func databaseName(ofColumn col: Int) throws -> String? {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     guard let cstr = sqlite3_column_database_name(self.stmt, Int32(col)) else {
       return nil
@@ -133,7 +142,7 @@ public class SQLiteStatement {
   /// Returns the table name of column `col` of the current result row.
   public func tableName(ofColumn col: Int) throws -> String? {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     guard let cstr = sqlite3_column_table_name(self.stmt, Int32(col)) else {
       return nil
@@ -144,7 +153,7 @@ public class SQLiteStatement {
   /// Returns the original name of column `col` of the current result row.
   public func originalName(ofColumn col: Int) throws -> String? {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     guard let cstr = sqlite3_column_origin_name(self.stmt, Int32(col)) else {
       return nil
@@ -155,7 +164,7 @@ public class SQLiteStatement {
   /// Returns the type of column `col` of the current result row.
   public func type(ofColumn col: Int) throws -> SQLiteType? {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     return SQLiteType(rawValue: sqlite3_column_type(self.stmt, Int32(col)))
   }
@@ -163,7 +172,7 @@ public class SQLiteStatement {
   /// Returns the declared type of column `col` of the current result row.
   public func declaredType(ofColumn col: Int) throws -> String? {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     guard let cstr = sqlite3_column_decltype(self.stmt, Int32(col)) else {
       return nil
@@ -174,7 +183,7 @@ public class SQLiteStatement {
   /// Returns the integer value at column `col` of the current result row.
   public func int(atColumn col: Int) throws -> Int64 {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     return sqlite3_column_int64(self.stmt, Int32(col))
   }
@@ -182,7 +191,7 @@ public class SQLiteStatement {
   /// Returns the floating-point value at column `col` of the current result row.
   public func float(atColumn col: Int) throws -> Double {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     return sqlite3_column_double(self.stmt, Int32(col))
   }
@@ -190,7 +199,7 @@ public class SQLiteStatement {
   /// Returns the text value at column `col` of the current result row.
   public func text(atColumn col: Int) throws -> String? {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     guard let cstr = sqlite3_column_text(self.stmt, Int32(col)) else {
       return nil
@@ -201,7 +210,7 @@ public class SQLiteStatement {
   /// Returns the blob value at column `col` of the current result row.
   public func blob(atColumn col: Int) throws -> Data? {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     guard let blob = sqlite3_column_blob(self.stmt, Int32(col)) else {
       return nil
@@ -212,7 +221,7 @@ public class SQLiteStatement {
   /// Returns the date value at column `col` of the current result row.
   public func date(atColumn col: Int) throws -> Date? {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     guard let cstr = sqlite3_column_text(self.stmt, Int32(col)) else {
       return nil
@@ -226,7 +235,7 @@ public class SQLiteStatement {
   /// Returns true, if column `col` of the current result row contains a _null_ value.
   public func isNull(atColumn col: Int) throws -> Bool {
     guard self.stmt != nil else {
-      throw SQLiteError.misuse
+      throw Self.protocolViolation
     }
     return sqlite3_column_type(self.stmt, Int32(col)) == SQLITE_NULL
   }
@@ -242,7 +251,7 @@ public class SQLiteStatement {
   /// Returns the parameter index for the parameter with name `name`.
   public func paramIndex(_ name: String) throws -> Int {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     return Int(sqlite3_bind_parameter_index(self.stmt, name.cString(using: .utf8)))
   }
@@ -250,7 +259,7 @@ public class SQLiteStatement {
   /// Returns the parameter name of the parameter at index `idx`.
   public func paramName(_ idx: Int) throws -> String? {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     return String(cString: sqlite3_bind_parameter_name(self.stmt, Int32(idx)))
   }
@@ -258,29 +267,29 @@ public class SQLiteStatement {
   /// Binds the given integer value `x` to the parameter at index `idx`.
   public func bind(integer x: Int64, toParam idx: Int) throws {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     let res = sqlite3_bind_int64(self.stmt, Int32(idx), x)
     guard res == SQLITE_OK else {
-      throw SQLiteError(res)
+      throw SQLiteError(res, database: self.database)
     }
   }
   
   /// Binds the given floating-point value `x` to the parameter at index `idx`.
   public func bind(float x: Double, toParam idx: Int) throws {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     let res = sqlite3_bind_double(self.stmt, Int32(idx), x)
     guard res == SQLITE_OK else {
-      throw SQLiteError(res)
+      throw SQLiteError(res, database: self.database)
     }
   }
   
   /// Binds the given string value `x` to the parameter at index `idx`.
   public func bind(text x: String, toParam idx: Int) throws {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     let res = sqlite3_bind_text(self.stmt,
                                 Int32(idx),
@@ -288,14 +297,14 @@ public class SQLiteStatement {
                                 -1,
                                 Self.SQLITE_TRANSIENT)
     guard res == SQLITE_OK else {
-      throw SQLiteError(res)
+      throw SQLiteError(res, database: self.database)
     }
   }
   
   /// Binds the given data value `x` to the parameter at index `idx`.
   public func bind(blob x: Data, toParam idx: Int) throws {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     let res = x.withUnsafeBytes { bufferPointer -> Int32 in
       sqlite3_bind_blob(self.stmt,
@@ -305,14 +314,14 @@ public class SQLiteStatement {
                         Self.SQLITE_TRANSIENT)
     }
     guard res == SQLITE_OK else {
-      throw SQLiteError(res)
+      throw SQLiteError(res, database: self.database)
     }
   }
   
   /// Binds the given date `x` to the parameter at index `idx`.
   public func bind(date x: Date, toParam idx: Int) throws {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     let res = sqlite3_bind_text(self.stmt,
                                 Int32(idx),
@@ -320,18 +329,18 @@ public class SQLiteStatement {
                                 -1,
                                 Self.SQLITE_TRANSIENT)
     guard res == SQLITE_OK else {
-      throw SQLiteError(res)
+      throw SQLiteError(res, database: self.database)
     }
   }
   
   /// Binds _null_ to the parameter at index `idx`.
   public func bindNull(toParam idx: Int) throws {
     guard self.stmt != nil else {
-      throw SQLiteError(SQLITE_MISUSE)
+      throw Self.protocolViolation
     }
     let res = sqlite3_bind_null(self.stmt, Int32(idx))
     guard res == SQLITE_OK else {
-      throw SQLiteError(res)
+      throw SQLiteError(res, database: self.database)
     }
   }
 }

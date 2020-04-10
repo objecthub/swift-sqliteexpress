@@ -24,7 +24,52 @@ import SQLite3
 
 /// `SQLiteError` enumerates all errors that can be thrown by methods of the SQLiteExpress framework.
 /// Both primary as well as extended result/error codes from SQLite are supported.
-public enum SQLiteError: LocalizedError, Hashable {
+public struct SQLiteError: LocalizedError, Hashable {
+
+  /// The corresponding error code
+  public let errorCode: SQLiteResultCode
+  
+  /// An optional string describing error details, e.g. the context of the error
+  public let errorDetails: String?
+  
+  /// `SQLiteError` initializer for a given error code.
+  public init(_ errorCode: SQLiteResultCode, details: String?) {
+    self.errorCode = errorCode
+    self.errorDetails = details
+  }
+  
+  /// `SQLiteError` initializer for raw error codes.
+  public init(_ rawErrorCode: Int32, details: String?) {
+    self.init(SQLiteResultCode(rawErrorCode), details: details)
+  }
+  
+  /// `SQLiteError` initializer for a given error code in a given database.
+  public init(_ errorCode: SQLiteResultCode, database: SQLiteDatabase? = nil) {
+    self.init(errorCode, details: database?.lastErrorDetails)
+  }
+  
+  /// `SQLiteError` initializer for raw error codes in a given database.
+  public init(_ rawErrorCode: Int32, database: SQLiteDatabase? = nil) {
+    self.init(SQLiteResultCode(rawErrorCode), details: database?.lastErrorDetails)
+  }
+  
+  /// Returns a localized description of this error as a string.
+  public var errorDescription: String? {
+    if let details = self.errorDetails {
+      return "\(self.errorCode.message): \(details) (error \(self.errorCode.rawValue))"
+    } else {
+      return "\(self.errorCode.message) (error \(self.errorCode.rawValue))"
+    }
+  }
+  
+  public static func == (lhs: SQLiteError, rhs: SQLiteError) -> Bool {
+    return lhs.errorCode == rhs.errorCode && lhs.errorDetails == rhs.errorDetails
+  }
+}
+
+/// `SQLiteResultCode` enumerates all result codes that can be returned by the SQLite3 API.
+/// Both primary as well as extended result/error codes from SQLite3 are supported.
+public enum SQLiteResultCode: Hashable {
   case ok
   case error
   case `internal`
@@ -119,9 +164,9 @@ public enum SQLiteError: LocalizedError, Hashable {
   case ioErrConvPath
   case unknown(Int32)
   
-  /// Initializes an `SQLiteError` from the given error code `errorCode`.
-  internal init(_ errorCode: Int32) {
-    switch errorCode {
+  /// Initializes an `SQLiteResultCode` from the given raw value `rawValue`.
+  internal init(_ rawValue: Int32) {
+    switch rawValue {
       case SQLITE_OK:         self = .ok
       case SQLITE_ERROR:      self = .error
       case SQLITE_INTERNAL:   self = .internal
@@ -214,12 +259,12 @@ public enum SQLiteError: LocalizedError, Hashable {
       case 6154:              self = .ioErrMMap
       case 6410:              self = .ioErrGetTempPath
       case 6666:              self = .ioErrConvPath
-      default:                self = .unknown(errorCode)
+      default:                self = .unknown(rawValue)
     }
   }
   
-  /// Returns the SQLite error code for this `SQLiteError` object.
-  public var errorCode: Int32 {
+  /// Returns the raw value for this `SQLiteResultCode` object.
+  public var rawValue: Int32 {
     switch self {
       case .ok:                     return SQLITE_OK
       case .error:                  return SQLITE_ERROR
@@ -317,17 +362,22 @@ public enum SQLiteError: LocalizedError, Hashable {
     }
   }
   
-  /// Returns a human readable error message for this `SQLiteError` object.
-  public var errorMessage: String {
-    if let cstr = sqlite3_errstr(self.errorCode) {
-      return "\(String(cString: cstr)) \(self.errorCode)"
+  /// Returns a human readable message for this `SQLiteResultCode` object.
+  public var message: String {
+    if let cstr = sqlite3_errstr(self.rawValue) {
+      return "\(String(cString: cstr)) \(self.rawValue)"
     } else {
-      return "unknown sqlite3 error \(self.errorCode)"
+      return "unknown sqlite3 error \(self.rawValue)"
     }
   }
   
-  /// Returns a localized description of this error as a string.
-  public var errorDescription: String? {
-    return self.errorMessage
+  /// Is this result code an error?
+  public var isError: Bool {
+    switch self {
+      case .ok, .done, .row:
+        return false
+      default:
+        return true
+    }
   }
 }
