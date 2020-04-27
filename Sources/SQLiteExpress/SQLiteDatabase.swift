@@ -86,11 +86,16 @@ public class  SQLiteDatabase {
   }
   
   deinit {
-    sqlite3_close(self.db)
+    if self.db != nil {
+      sqlite3_close_v2(self.db)
+    }
   }
   
   /// Close database.
   public func close() throws {
+    guard self.db != nil else {
+      return
+    }
     let res = sqlite3_close_v2(self.db)
     guard res == SQLITE_OK else {
       throw SQLiteError(res, database: self)
